@@ -6,7 +6,7 @@ import { Report, fetchReports } from "@/lib/data";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ListFilter, Map, Loader } from "lucide-react";
+import { ListFilter, Loader } from "lucide-react";
 import LocationPicker from "@/components/LocationPicker";
 import { Link } from "react-router-dom";
 
@@ -86,7 +86,7 @@ const Index = () => {
                 </Select>
               </div>
               
-              <Tabs defaultValue="list" value={activeView} onValueChange={setActiveView} className="w-full sm:w-auto">
+              <Tabs value={activeView} onValueChange={setActiveView} className="w-full sm:w-auto">
                 <TabsList className="grid w-full grid-cols-2 sm:w-auto">
                   <TabsTrigger value="list">List</TabsTrigger>
                   <TabsTrigger value="map">Map</TabsTrigger>
@@ -106,56 +106,58 @@ const Index = () => {
             </div>
           ) : (
             <div className="animate-fade-in">
-              <TabsContent value="list" className="mt-0">
-                {reports.length === 0 ? (
-                  <div className="text-center py-20">
-                    <p className="text-lg text-muted-foreground mb-4">No reports have been submitted yet.</p>
-                    <Link to="/submit">
-                      <Button>Be the first to report an issue</Button>
-                    </Link>
+              <Tabs value={activeView} defaultValue="list">
+                <TabsContent value="list" className="mt-0">
+                  {reports.length === 0 ? (
+                    <div className="text-center py-20">
+                      <p className="text-lg text-muted-foreground mb-4">No reports have been submitted yet.</p>
+                      <Link to="/submit">
+                        <Button>Be the first to report an issue</Button>
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {sortedReports.map((report) => (
+                        <ReportCard key={report.id} report={report} />
+                      ))}
+                    </div>
+                  )}
+                </TabsContent>
+                
+                <TabsContent value="map" className="mt-0">
+                  <div className="bg-card rounded-lg border overflow-hidden h-[500px] relative">
+                    <LocationPicker
+                      onLocationSelected={() => {}}
+                      readOnly={true}
+                      className="h-full"
+                    />
+                    <div className="absolute top-4 right-4 bg-white p-4 rounded-lg shadow-lg">
+                      <h3 className="font-medium mb-2">Map Legend</h3>
+                      <ul className="space-y-1 text-sm">
+                        <li className="flex items-center">
+                          <span className="h-3 w-3 rounded-full bg-red-500 mr-2"></span>
+                          <span>Reported</span>
+                        </li>
+                        <li className="flex items-center">
+                          <span className="h-3 w-3 rounded-full bg-blue-500 mr-2"></span>
+                          <span>Verified</span>
+                        </li>
+                        <li className="flex items-center">
+                          <span className="h-3 w-3 rounded-full bg-amber-500 mr-2"></span>
+                          <span>Action Taken</span>
+                        </li>
+                        <li className="flex items-center">
+                          <span className="h-3 w-3 rounded-full bg-green-500 mr-2"></span>
+                          <span>Resolved</span>
+                        </li>
+                      </ul>
+                    </div>
+                    <div className="absolute bottom-4 left-4 bg-white/90 p-3 rounded-lg text-xs">
+                      This is a demonstration of the map view. In a production environment, this would display pins for all reported issues.
+                    </div>
                   </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {sortedReports.map((report) => (
-                      <ReportCard key={report.id} report={report} />
-                    ))}
-                  </div>
-                )}
-              </TabsContent>
-              
-              <TabsContent value="map" className="mt-0">
-                <div className="bg-card rounded-lg border overflow-hidden h-[500px] relative">
-                  <LocationPicker
-                    onLocationSelected={() => {}}
-                    readOnly={true}
-                    className="h-full"
-                  />
-                  <div className="absolute top-4 right-4 bg-white p-4 rounded-lg shadow-lg">
-                    <h3 className="font-medium mb-2">Map Legend</h3>
-                    <ul className="space-y-1 text-sm">
-                      <li className="flex items-center">
-                        <span className="h-3 w-3 rounded-full bg-red-500 mr-2"></span>
-                        <span>Reported</span>
-                      </li>
-                      <li className="flex items-center">
-                        <span className="h-3 w-3 rounded-full bg-blue-500 mr-2"></span>
-                        <span>Verified</span>
-                      </li>
-                      <li className="flex items-center">
-                        <span className="h-3 w-3 rounded-full bg-amber-500 mr-2"></span>
-                        <span>Action Taken</span>
-                      </li>
-                      <li className="flex items-center">
-                        <span className="h-3 w-3 rounded-full bg-green-500 mr-2"></span>
-                        <span>Resolved</span>
-                      </li>
-                    </ul>
-                  </div>
-                  <div className="absolute bottom-4 left-4 bg-white/90 p-3 rounded-lg text-xs">
-                    This is a demonstration of the map view. In a production environment, this would display pins for all reported issues.
-                  </div>
-                </div>
-              </TabsContent>
+                </TabsContent>
+              </Tabs>
             </div>
           )}
         </div>
