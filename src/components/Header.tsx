@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Leaf } from "lucide-react";
+import { Menu, X } from "lucide-react";
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -16,8 +16,11 @@ const Header = () => {
         <div className="flex items-center justify-between">
           {/* Logo & Title */}
           <Link to="/" className="flex items-center gap-2">
-            <Leaf className="h-6 w-6 text-primary" />
-            <h1 className="text-xl font-bold text-primary">San Pedro EcoWatch</h1>
+            <img 
+              src="/lovable-uploads/37281d79-2c30-4ca8-be5d-9335a591c41c.png" 
+              alt="San Pedro EcoWatch Logo" 
+              className="h-10"
+            />
           </Link>
           
           {/* Desktop Navigation */}

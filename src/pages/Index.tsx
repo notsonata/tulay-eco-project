@@ -57,7 +57,13 @@ const Index = () => {
           {/* Hero Section */}
           <section className="mb-8 bg-gradient-to-br from-primary/90 to-info/90 text-white p-8 rounded-lg shadow-md">
             <div className="max-w-3xl mx-auto text-center">
-              <h1 className="text-3xl sm:text-4xl font-bold mb-4">San Pedro EcoWatch</h1>
+              <div className="flex justify-center mb-4">
+                <img 
+                  src="/lovable-uploads/37281d79-2c30-4ca8-be5d-9335a591c41c.png" 
+                  alt="San Pedro EcoWatch Logo" 
+                  className="h-24"
+                />
+              </div>
               <p className="text-lg mb-6">Help keep our city clean, safe, and environmentally sustainable by reporting issues in your barangay.</p>
               <Link to="/submit">
                 <Button size="lg" className="bg-white text-primary hover:bg-white/90">
@@ -106,7 +112,7 @@ const Index = () => {
             </div>
           ) : (
             <div className="animate-fade-in">
-              <Tabs value={activeView} defaultValue="list">
+              <Tabs value={activeView}>
                 <TabsContent value="list" className="mt-0">
                   {reports.length === 0 ? (
                     <div className="text-center py-20">
