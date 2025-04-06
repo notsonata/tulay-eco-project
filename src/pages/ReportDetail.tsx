@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import Header from "@/components/Header";
@@ -6,6 +5,7 @@ import StatusBadge from "@/components/StatusBadge";
 import CommentSection from "@/components/CommentSection";
 import LocationPicker from "@/components/LocationPicker";
 import ImageUpload from "@/components/ImageUpload";
+import ImagePreview from "@/components/ImagePreview";
 import { 
   Report, 
   Comment, 
@@ -30,6 +30,10 @@ const ReportDetail = () => {
   const [error, setError] = useState<string | null>(null);
   const [upvoting, setUpvoting] = useState(false);
   const [hasUpvoted, setHasUpvoted] = useState(false);
+  const [imagePreview, setImagePreview] = useState({
+    isOpen: false,
+    initialIndex: 0
+  });
   
   useEffect(() => {
     const loadData = async () => {
@@ -216,13 +220,25 @@ const ReportDetail = () => {
                 <Card>
                   <CardContent className="pt-6">
                     <h2 className="text-xl font-semibold mb-3">Evidence</h2>
-                    <ImageUpload
-                      onImagesSelected={() => {}}
-                      previewUrls={report.images.map(img => img.url)}
-                      readOnly={true}
-                    />
+                    <div className="cursor-pointer" onClick={() => setImagePreview({ isOpen: true, initialIndex: 0 })}>
+                      <ImageUpload
+                        onImagesSelected={() => {}}
+                        previewUrls={report.images.map(img => img.url)}
+                        readOnly={true}
+                      />
+                    </div>
                   </CardContent>
                 </Card>
+              )}
+              
+              {/* Image Preview Dialog */}
+              {report.images.length > 0 && (
+                <ImagePreview 
+                  images={report.images.map(img => img.url)}
+                  initialIndex={imagePreview.initialIndex}
+                  open={imagePreview.isOpen}
+                  onOpenChange={(open) => setImagePreview(prev => ({ ...prev, isOpen: open }))}
+                />
               )}
               
               {/* Upvote Section */}
