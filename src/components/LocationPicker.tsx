@@ -66,16 +66,12 @@ const LocationPicker = ({
     <div className={`relative ${className}`}>
       <div className="w-full h-64 rounded-md overflow-hidden">
         <MapContainer 
-          center={position} 
-          zoom={DEFAULT_ZOOM} 
+          key={`map-${position[0]}-${position[1]}`}
           style={{ height: "100%", width: "100%" }}
-          dragging={!readOnly}
+          zoom={DEFAULT_ZOOM} 
           scrollWheelZoom={!readOnly}
-          doubleClickZoom={!readOnly}
-          zoomControl={!readOnly}
         >
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           <LocationMarker 
