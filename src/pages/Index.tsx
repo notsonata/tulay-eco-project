@@ -6,7 +6,7 @@ import { Report, fetchReports } from "@/lib/data";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ListFilter, Loader } from "lucide-react";
+import { ListFilter, Loader, MapPin } from "lucide-react";
 import LocationPicker from "@/components/LocationPicker";
 import { Link } from "react-router-dom";
 
@@ -79,19 +79,21 @@ const Index = () => {
             <h2 className="text-2xl font-bold">Community Reports</h2>
             
             <div className="flex items-center gap-2 w-full sm:w-auto">
-              <div className="flex-1 sm:flex-none">
-                <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
-                  <SelectTrigger className="w-full sm:w-[180px]">
-                    <ListFilter className="h-4 w-4 mr-2" />
-                    <SelectValue placeholder="Sort by" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="newest">Newest First</SelectItem>
-                    <SelectItem value="mostUpvoted">Most Upvoted</SelectItem>
-                    <SelectItem value="mostComments">Most Comments</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              {activeView === "list" && (
+                <div className="flex-1 sm:flex-none">
+                  <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
+                    <SelectTrigger className="w-full sm:w-[180px]">
+                      <ListFilter className="h-4 w-4 mr-2" />
+                      <SelectValue placeholder="Sort by" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="newest">Newest First</SelectItem>
+                      <SelectItem value="mostUpvoted">Most Upvoted</SelectItem>
+                      <SelectItem value="mostComments">Most Comments</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               
               <Tabs value={activeView} onValueChange={setActiveView} className="w-full sm:w-auto">
                 <TabsList className="grid w-full grid-cols-2 sm:w-auto">
@@ -132,13 +134,13 @@ const Index = () => {
                 </TabsContent>
                 
                 <TabsContent value="map" className="mt-0">
-                  <div className="bg-card rounded-lg border overflow-hidden h-[500px] relative">
+                  <div className="bg-card rounded-lg border overflow-hidden h-[700px] relative">
                     <LocationPicker
                       onLocationSelected={() => {}}
                       readOnly={true}
                       className="h-full"
                     />
-                    <div className="absolute top-4 right-4 bg-white p-4 rounded-lg shadow-lg">
+                    <div className="absolute top-4 right-4 bg-white p-4 rounded-lg shadow-lg z-[1000]">
                       <h3 className="font-medium mb-2">Map Legend</h3>
                       <ul className="space-y-1 text-sm">
                         <li className="flex items-center">
@@ -159,7 +161,7 @@ const Index = () => {
                         </li>
                       </ul>
                     </div>
-                    <div className="absolute bottom-4 left-4 bg-white/90 p-3 rounded-lg text-xs">
+                    <div className="absolute bottom-4 left-4 bg-white/90 p-3 rounded-lg text-xs z-[1000]">
                       This is a demonstration of the map view. In a production environment, this would display pins for all reported issues.
                     </div>
                   </div>
