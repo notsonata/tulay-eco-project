@@ -19,7 +19,7 @@ const Header = () => {
             <img 
               src="/lovable-uploads/37281d79-2c30-4ca8-be5d-9335a591c41c.png" 
               alt="San Pedro EcoWatch Logo" 
-              className="h-10"
+              className="h-16"
             />
           </Link>
           

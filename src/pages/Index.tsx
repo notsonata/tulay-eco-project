@@ -61,10 +61,11 @@ const Index = () => {
                 <img 
                   src="/lovable-uploads/37281d79-2c30-4ca8-be5d-9335a591c41c.png" 
                   alt="San Pedro EcoWatch Logo" 
-                  className="h-24"
+                  className="h-32"
                 />
               </div>
-              <p className="text-lg mb-6">Help keep our city clean, safe, and environmentally sustainable by reporting issues in your barangay.</p>
+              <h1 className="text-2xl font-bold mb-2">San Pedro Environmental Reporting & Response System</h1>
+              <p className="text-lg mb-6">Help keep our city clean, safe, and environmentally sustainable.</p>
               <Link to="/submit">
                 <Button size="lg" className="bg-white text-primary hover:bg-white/90">
                   Report an Issue
