@@ -1,11 +1,12 @@
+// --- START OF FILE LocationPicker.tsx ---
 
 import { useState, useEffect } from "react";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
-import { MapPin } from "lucide-react";
+// Removed: import { MapPin } from "lucide-react"; // Was unused
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
-// Fix for default marker icons in Leaflet
+// Fix for default marker icons in Leaflet when using bundlers like Vite/Webpack
 import icon from "leaflet/dist/images/marker-icon.png";
 import iconShadow from "leaflet/dist/images/marker-shadow.png";
 let DefaultIcon = L.icon({
@@ -24,13 +25,18 @@ interface LocationPickerProps {
   className?: string;
 }
 
-// SAN PEDRO, LAGUNA center coordinates
+// SAN PEDRO, LAGUNA center coordinates (or your preferred default)
 const DEFAULT_LAT = 14.3583;
 const DEFAULT_LNG = 121.0560;
 const DEFAULT_ZOOM = 14;
 
-// This component handles map clicks and updates the marker position
-const LocationMarker = ({ position, setPosition, readOnly, onLocationSelected }: {
+// This component handles map clicks, updates the marker position, and animates the map view
+const LocationMarker = ({
+  position,
+  setPosition,
+  readOnly,
+  onLocationSelected,
+}: {
   position: [number, number];
   setPosition: (pos: [number, number]) => void;
   readOnly: boolean;
@@ -38,67 +44,79 @@ const LocationMarker = ({ position, setPosition, readOnly, onLocationSelected }:
 }) => {
   const map = useMapEvents({
     click: (e) => {
-      if (readOnly) return;
+      if (readOnly) return; // Do nothing if readOnly
       const { lat, lng } = e.latlng;
-      setPosition([lat, lng]);
-      onLocationSelected(lat, lng);
-    }
+      const newPos: [number, number] = [lat, lng];
+      setPosition(newPos); // Update the state holding the marker position
+      onLocationSelected(lat, lng); // Callback to parent component
+      map.flyTo(e.latlng, map.getZoom()); // Smoothly animate map view to the clicked point
+    },
   });
 
+  // Render the marker at the current position state
   return position ? <Marker position={position} /> : null;
 };
 
-const LocationPicker = ({ 
-  onLocationSelected, 
-  initialLat = DEFAULT_LAT, 
+const LocationPicker = ({
+  onLocationSelected,
+  initialLat = DEFAULT_LAT,
   initialLng = DEFAULT_LNG,
   readOnly = false,
-  className = ""
+  className = "h-64 w-full",
 }: LocationPickerProps) => {
-  const [position, setPosition] = useState<[number, number]>([initialLat, initialLng]);
-  
+  // State for the marker's position
+  const [position, setPosition] = useState<[number, number]>([
+    initialLat,
+    initialLng,
+  ]);
+
+  // Define the initial center for the map container based on props
+  const initialCenter: L.LatLngExpression = [initialLat, initialLng];
+
+  // Effect to update the marker's position if the initial props change externally
   useEffect(() => {
-    // Update position if initialLat or initialLng changes
     setPosition([initialLat, initialLng]);
+    // Note: We don't automatically flyTo here, as the prop change might happen
+    // while the user is interacting with the map. The initialCenter handles the load.
   }, [initialLat, initialLng]);
-  
+
   return (
     <div className={`relative ${className}`}>
-      <div className="w-full h-64 rounded-md overflow-hidden">
-        <MapContainer 
-          center={position} 
-          zoom={DEFAULT_ZOOM} 
+      <div className="w-full h-full rounded-md overflow-hidden border border-input"> {/* Added subtle border */}
+        <MapContainer
+          center={initialCenter} // Use the initial center for map load
+          zoom={DEFAULT_ZOOM}
           style={{ height: "100%", width: "100%" }}
-          dragging={!readOnly}
-          scrollWheelZoom={!readOnly}
-          doubleClickZoom={!readOnly}
-          zoomControl={!readOnly}
+          dragging={!readOnly} // Disable dragging if readOnly
+          scrollWheelZoom={!readOnly} // Disable scroll wheel zoom if readOnly
+          doubleClickZoom={!readOnly} // Disable double click zoom if readOnly
+          zoomControl={!readOnly} // Hide zoom controls if readOnly
+          attributionControl={!readOnly} // Optionally hide attribution if readOnly
         >
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
-          <LocationMarker 
-            position={position} 
-            setPosition={setPosition} 
-            readOnly={readOnly} 
+          {/* Render the marker and handle clicks via the LocationMarker component */}
+          <LocationMarker
+            position={position}
+            setPosition={setPosition}
+            readOnly={readOnly}
             onLocationSelected={onLocationSelected}
           />
         </MapContainer>
 
+        {/* Helper text displayed only when not readOnly */}
         {readOnly ? null : (
-          <div className="absolute bottom-3 right-3 bg-white rounded-md shadow-md p-2 text-xs max-w-[180px] z-[1000]">
-            Click on the map to select the exact location of the issue
+          <div className="absolute bottom-3 right-3 bg-background/80 backdrop-blur-sm rounded-md shadow-md p-2 text-xs max-w-[180px] z-[1000] pointer-events-none">
+            Click on the map to select the exact location.
           </div>
         )}
       </div>
       
-      {/* Coordinates display below map */}
-      <div className="mt-2 text-center text-xs text-muted-foreground">
-        {position[0].toFixed(6)}, {position[1].toFixed(6)}
-      </div>
     </div>
   );
 };
 
 export default LocationPicker;
+// --- END OF FILE LocationPicker.tsx ---
