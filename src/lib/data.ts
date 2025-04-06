@@ -61,7 +61,6 @@ export const ISSUE_CATEGORIES: IssueCategory[] = [
   "Water Pollution - Visual",
   "Air Pollution - Visual/Odor",
   "Uncollected Garbage",
-  "Damaged Public Facility",
   "Lack of Shade/Tree Issue"
 ];
 

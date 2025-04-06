@@ -136,9 +136,9 @@ const Index = () => {
                     <LocationPicker
                       onLocationSelected={() => {}}
                       readOnly={true}
-                      className="h-full"
+                      className="h-full w-full"
                     />
-                    <div className="absolute top-4 right-4 bg-white p-4 rounded-lg shadow-lg">
+                    <div className="absolute top-4 right-4 bg-white p-4 rounded-lg shadow-lg z-[1001]">
                       <h3 className="font-medium mb-2">Map Legend</h3>
                       <ul className="space-y-1 text-sm">
                         <li className="flex items-center">
