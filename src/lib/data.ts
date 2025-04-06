@@ -117,8 +117,8 @@ export const MOCK_REPORTS: Report[] = [
     longitude: 121.055078,
     images: [
       {
-        url: "https://images.unsplash.com/photo-1605600659873-d808a13e4d2a",
-        thumbnail: "https://images.unsplash.com/photo-1605600659873-d808a13e4d2a?w=200&h=200&fit=crop"
+        url: "https://www.esc.nsw.gov.au/__data/assets/image/0011/164873/varieties/bannerLrg.jpg",
+        thumbnail: "https://www.esc.nsw.gov.au/__data/assets/image/0011/164873/varieties/bannerLrg.jpg"
       }
     ],
     status: "Reported",
@@ -138,8 +138,8 @@ export const MOCK_REPORTS: Report[] = [
     longitude: 121.048741,
     images: [
       {
-        url: "https://images.unsplash.com/photo-1583244532610-2a234e7c3eba",
-        thumbnail: "https://images.unsplash.com/photo-1583244532610-2a234e7c3eba?w=200&h=200&fit=crop"
+        url: "https://www.researchgate.net/profile/Lazarus-Justin/publication/344456427/figure/fig1/AS:942356937322507@1601686810670/Plastic-waste-blocking-drains.png",
+        thumbnail: "https://www.researchgate.net/profile/Lazarus-Justin/publication/344456427/figure/fig1/AS:942356937322507@1601686810670/Plastic-waste-blocking-drains.png"
       }
     ],
     status: "Verified",
@@ -159,8 +159,8 @@ export const MOCK_REPORTS: Report[] = [
     longitude: 121.062331,
     images: [
       {
-        url: "https://images.unsplash.com/photo-1611273426858-450d8e3c9fce",
-        thumbnail: "https://images.unsplash.com/photo-1611273426858-450d8e3c9fce?w=200&h=200&fit=crop"
+        url: "https://www8.gmanews.tv/webpics/v3/2012/11/thumb-econ-pplant1.jpg",
+        thumbnail: "https://www8.gmanews.tv/webpics/v3/2012/11/thumb-econ-pplant1.jpg"
       }
     ],
     status: "Action Taken",
@@ -180,8 +180,8 @@ export const MOCK_REPORTS: Report[] = [
     longitude: 121.057266,
     images: [
       {
-        url: "https://images.unsplash.com/photo-1621451537084-482c73073a0f",
-        thumbnail: "https://images.unsplash.com/photo-1621451537084-482c73073a0f?w=200&h=200&fit=crop"
+        url: "https://www.thegef.org/sites/default/files/Laguna-de-Bay-Tayuman-Bridge_870.jpg",
+        thumbnail: "https://www.thegef.org/sites/default/files/Laguna-de-Bay-Tayuman-Bridge_870.jpg"
       }
     ],
     status: "Resolved",
@@ -201,8 +201,8 @@ export const MOCK_REPORTS: Report[] = [
     longitude: 121.053185,
     images: [
       {
-        url: "https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0",
-        thumbnail: "https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?w=200&h=200&fit=crop"
+        url: "https://i0.wp.com/www.middleeastmonitor.com/wp-content/uploads/2024/10/GettyImages-2160516358.jpg?fit=1200%2C800&ssl=1",
+        thumbnail: "https://i0.wp.com/www.middleeastmonitor.com/wp-content/uploads/2024/10/GettyImages-2160516358.jpg?fit=1200%2C800&ssl=1"
       }
     ],
     status: "Verified",
