@@ -1,6 +1,20 @@
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
+import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import { MapPin } from "lucide-react";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+
+// Fix for default marker icons in Leaflet
+import icon from "leaflet/dist/images/marker-icon.png";
+import iconShadow from "leaflet/dist/images/marker-shadow.png";
+let DefaultIcon = L.icon({
+  iconUrl: icon,
+  shadowUrl: iconShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+});
+L.Marker.prototype.options.icon = DefaultIcon;
 
 interface LocationPickerProps {
   onLocationSelected: (lat: number, lng: number) => void;
@@ -15,8 +29,25 @@ const DEFAULT_LAT = 14.3583;
 const DEFAULT_LNG = 121.0560;
 const DEFAULT_ZOOM = 14;
 
-// This is a mock implementation that shows a static map with a pin
-// In a real app, this would use Leaflet.js or Mapbox GL
+// This component handles map clicks and updates the marker position
+const LocationMarker = ({ position, setPosition, readOnly, onLocationSelected }: {
+  position: [number, number];
+  setPosition: (pos: [number, number]) => void;
+  readOnly: boolean;
+  onLocationSelected: (lat: number, lng: number) => void;
+}) => {
+  const map = useMapEvents({
+    click: (e) => {
+      if (readOnly) return;
+      const { lat, lng } = e.latlng;
+      setPosition([lat, lng]);
+      onLocationSelected(lat, lng);
+    }
+  });
+
+  return position ? <Marker position={position} /> : null;
+};
+
 const LocationPicker = ({ 
   onLocationSelected, 
   initialLat = DEFAULT_LAT, 
@@ -24,72 +55,47 @@ const LocationPicker = ({
   readOnly = false,
   className = ""
 }: LocationPickerProps) => {
-  const [selectedLat, setSelectedLat] = useState(initialLat);
-  const [selectedLng, setSelectedLng] = useState(initialLng);
-  const mapRef = useRef<HTMLDivElement>(null);
+  const [position, setPosition] = useState<[number, number]>([initialLat, initialLng]);
   
-  // Simulate map click
-  const handleMapClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (readOnly) return;
-    
-    // Get click position relative to map container
-    if (mapRef.current) {
-      const rect = mapRef.current.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      
-      // Convert to "pretend" lat/lng (not accurate but simulates the interaction)
-      // In a real implementation, this would use the mapping library's conversion
-      const width = rect.width;
-      const height = rect.height;
-      
-      // Simulate a small area around San Pedro with the map
-      const latRange = 0.02; // ~2km north-south
-      const lngRange = 0.02; // ~2km east-west
-      
-      const newLat = DEFAULT_LAT + (latRange / 2) - (y / height * latRange);
-      const newLng = DEFAULT_LNG - (lngRange / 2) + (x / width * lngRange);
-      
-      setSelectedLat(newLat);
-      setSelectedLng(newLng);
-      onLocationSelected(newLat, newLng);
-    }
-  };
-
+  useEffect(() => {
+    // Update position if initialLat or initialLng changes
+    setPosition([initialLat, initialLng]);
+  }, [initialLat, initialLng]);
+  
   return (
     <div className={`relative ${className}`}>
-      <div 
-        ref={mapRef}
-        onClick={handleMapClick}
-        className={`relative w-full h-64 bg-gray-100 rounded-md overflow-hidden cursor-${readOnly ? 'default' : 'crosshair'}`}
-      >
-        {/* This would be a real map in production */}
-        <div className="absolute inset-0 bg-green-50">
-          {/* Simulated map UI */}
-          <div className="w-full h-full bg-[url('https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/121.0560,14.3583,14,0/600x400?access_token=pk.demo')] bg-center bg-cover opacity-95">
-            {/* Fake map elements */}
-            <div className="absolute top-3 right-3 bg-white shadow-md rounded p-2 text-xs">
-              San Pedro, Laguna
-            </div>
-            <div className="absolute bottom-3 left-3 bg-white bg-opacity-75 text-xs p-1 rounded">
-              {selectedLat.toFixed(6)}, {selectedLng.toFixed(6)}
-            </div>
-          </div>
-        </div>
-        
-        {/* Pin marker */}
-        <div 
-          className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-full"
-          style={{ marginLeft: 0, marginTop: 0 }}
+      <div className="w-full h-64 rounded-md overflow-hidden">
+        <MapContainer 
+          center={position} 
+          zoom={DEFAULT_ZOOM} 
+          style={{ height: "100%", width: "100%" }}
+          dragging={!readOnly}
+          scrollWheelZoom={!readOnly}
+          doubleClickZoom={!readOnly}
+          zoomControl={!readOnly}
         >
-          <MapPin className="h-8 w-8 text-primary drop-shadow-md" />
-        </div>
-        
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+          <LocationMarker 
+            position={position} 
+            setPosition={setPosition} 
+            readOnly={readOnly} 
+            onLocationSelected={onLocationSelected}
+          />
+        </MapContainer>
+
         {readOnly ? null : (
-          <div className="absolute bottom-3 right-3 bg-white rounded-md shadow-md p-2 text-xs max-w-[180px]">
+          <div className="absolute bottom-3 right-3 bg-white rounded-md shadow-md p-2 text-xs max-w-[180px] z-[1000]">
             Click on the map to select the exact location of the issue
           </div>
         )}
+      </div>
+      
+      {/* Coordinates display below map */}
+      <div className="mt-2 text-center text-xs text-muted-foreground">
+        {position[0].toFixed(6)}, {position[1].toFixed(6)}
       </div>
     </div>
   );

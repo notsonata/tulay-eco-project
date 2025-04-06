@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -23,6 +23,13 @@ const ImagePreview = ({
 }: ImagePreviewProps) => {
   const [currentIndex, setCurrentIndex] = useState<number>(initialIndex);
   
+  // Reset to initialIndex when dialog opens or initialIndex changes
+  useEffect(() => {
+    if (open) {
+      setCurrentIndex(initialIndex);
+    }
+  }, [open, initialIndex]);
+  
   const goToNext = () => {
     setCurrentIndex((prev) => (prev + 1) % images.length);
   };
@@ -30,6 +37,24 @@ const ImagePreview = ({
   const goToPrevious = () => {
     setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
   };
+  
+  // Handle keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!open) return;
+      
+      if (e.key === "ArrowRight") {
+        goToNext();
+      } else if (e.key === "ArrowLeft") {
+        goToPrevious();
+      } else if (e.key === "Escape") {
+        onOpenChange(false);
+      }
+    };
+    
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [open, onOpenChange]);
   
   if (images.length === 0) return null;
   
