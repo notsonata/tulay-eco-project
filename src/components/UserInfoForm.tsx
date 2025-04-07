@@ -1,160 +1,137 @@
 
-import { useState, useEffect } from "react";
-import { useForm, Controller } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { useState } from "react";
 import { Barangay, BARANGAYS } from "@/lib/data";
-import PhoneVerification from "./PhoneVerification";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface UserInfoFormProps {
-  onSubmit: (data: { name: string; phoneNumber: string; barangay: Barangay }) => void;
+  onSubmit: (userInfo: {name: string; phoneNumber: string; barangay: Barangay}) => void;
+  submitting?: boolean;
   buttonText?: string;
+  className?: string;
+  disableForm?: boolean;
 }
 
-const formSchema = z.object({
-  name: z.string().min(3, "Name must be at least 3 characters"),
-  phoneNumber: z.string().min(10, "Phone number must be at least 10 digits"),
-  barangay: z.enum(BARANGAYS, {
-    required_error: "Please select a barangay",
-  }),
-});
+const UserInfoForm = ({ onSubmit, submitting = false, buttonText = "Submit", className = "", disableForm = false }: UserInfoFormProps) => {
+  const [name, setName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [barangay, setBarangay] = useState<Barangay | "">("");
+  
+  const [nameError, setNameError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
+  const [barangayError, setBarangayError] = useState("");
 
-const UserInfoForm = ({ onSubmit, buttonText = "Submit" }: UserInfoFormProps) => {
-  const [isPhoneVerified, setIsPhoneVerified] = useState(false);
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: "",
-      phoneNumber: "",
-      barangay: "" as Barangay,
-    },
-  });
-
-  const { control, handleSubmit, formState, watch } = form;
-  const phoneNumber = watch("phoneNumber");
-
-  // Phone verification handler
-  const handlePhoneVerified = () => {
-    setIsPhoneVerified(true);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Reset errors
+    setNameError("");
+    setPhoneError("");
+    setBarangayError("");
+    
+    // Validate
+    let isValid = true;
+    
+    if (!name.trim()) {
+      setNameError("Name is required");
+      isValid = false;
+    }
+    
+    if (!phoneNumber.trim()) {
+      setPhoneError("Phone number is required");
+      isValid = false;
+    } else if (!/^\d{11}$/.test(phoneNumber.replace(/\D/g, ''))) {
+      setPhoneError("Please enter a valid phone number (11 digits)");
+      isValid = false;
+    }
+    
+    if (!barangay) {
+      setBarangayError("Please select your barangay");
+      isValid = false;
+    }
+    
+    if (isValid && barangay) {
+      onSubmit({
+        name,
+        phoneNumber,
+        barangay
+      });
+    }
+  };
+  
+  const formatPhoneNumber = (value: string) => {
+    // Remove all non-digits
+    const cleaned = value.replace(/\D/g, '');
+    // Limit to 11 digits
+    const limited = cleaned.substring(0, 11);
+    setPhoneNumber(limited);
   };
 
   return (
-    <Form {...form}>
-      <form
-        onSubmit={handleSubmit((data) => {
-          if (!isPhoneVerified) {
-            form.setError("phoneNumber", {
-              type: "manual",
-              message: "Phone number must be verified",
-            });
-            return;
-          }
-          onSubmit(data);
-        })}
-        className="space-y-4"
-      >
-        <FormField
-          control={control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Full Name *</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter your full name" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={control}
-          name="phoneNumber"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Phone Number *</FormLabel>
-              <div className="space-y-2">
-                <FormControl>
-                  <Input
-                    placeholder="e.g., 09123456789"
-                    {...field}
-                    onChange={(e) => {
-                      // Only allow numeric input
-                      const value = e.target.value.replace(/[^0-9]/g, "");
-                      field.onChange(value);
-                      if (isPhoneVerified) {
-                        setIsPhoneVerified(false);
-                      }
-                    }}
-                    maxLength={11}
-                  />
-                </FormControl>
-                <PhoneVerification 
-                  phoneNumber={phoneNumber} 
-                  onVerified={handlePhoneVerified}
-                  disabled={!phoneNumber || phoneNumber.length < 10 || !formState.dirtyFields.phoneNumber}
-                />
-                <FormMessage />
-              </div>
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={control}
-          name="barangay"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Barangay *</FormLabel>
-              <Select
-                onValueChange={field.onChange}
-                defaultValue={field.value}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your barangay" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {BARANGAYS.map((barangay) => (
-                    <SelectItem key={barangay} value={barangay}>
-                      {barangay}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <Button
-          type="submit"
-          className="w-full"
-          disabled={formState.isSubmitting || !formState.isDirty}
-        >
-          {buttonText}
-        </Button>
-      </form>
-    </Form>
+    <form onSubmit={handleSubmit} className={className}>
+      <div className="space-y-4">
+        <div>
+          <Label htmlFor="name">Full Name *</Label>
+          <Input 
+            id="name" 
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Enter your full name"
+            disabled={disableForm || submitting}
+            className={nameError ? "border-red-500" : ""}
+          />
+          {nameError && <p className="text-sm text-red-500 mt-1">{nameError}</p>}
+        </div>
+        
+        <div>
+          <Label htmlFor="phone">Phone Number *</Label>
+          <Input 
+            id="phone" 
+            value={phoneNumber}
+            onChange={(e) => formatPhoneNumber(e.target.value)}
+            placeholder="09XXXXXXXXX"
+            disabled={disableForm || submitting}
+            className={phoneError ? "border-red-500" : ""}
+          />
+          {phoneError && <p className="text-sm text-red-500 mt-1">{phoneError}</p>}
+        </div>
+        
+        <div>
+          <Label htmlFor="barangay">Barangay *</Label>
+          <Select
+            value={barangay}
+            onValueChange={(value) => setBarangay(value as Barangay)}
+            disabled={disableForm || submitting}
+          >
+            <SelectTrigger 
+              id="barangay" 
+              className={barangayError ? "border-red-500" : ""}
+            >
+              <SelectValue placeholder="Select your barangay" />
+            </SelectTrigger>
+            <SelectContent>
+              {BARANGAYS.map((b) => (
+                <SelectItem key={b} value={b}>{b}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {barangayError && <p className="text-sm text-red-500 mt-1">{barangayError}</p>}
+        </div>
+        
+        {!disableForm && (
+          <div className="pt-2">
+            <button 
+              type="submit"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 w-full py-2 rounded-md transition-colors disabled:opacity-50"
+              disabled={submitting}
+            >
+              {submitting ? "Please wait..." : buttonText}
+            </button>
+          </div>
+        )}
+      </div>
+    </form>
   );
 };
 

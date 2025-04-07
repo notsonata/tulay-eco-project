@@ -1,6 +1,8 @@
+// --- START OF FILE LocationPicker.tsx ---
 
 import { useState, useEffect } from "react";
-import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+// Removed: import { MapPin } from "lucide-react"; // Was unused
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
@@ -27,23 +29,6 @@ interface LocationPickerProps {
 const DEFAULT_LAT = 14.3583;
 const DEFAULT_LNG = 121.0560;
 const DEFAULT_ZOOM = 14;
-
-// Component to handle map updates when external props change
-const MapController = ({
-  center,
-  zoom
-}: {
-  center: [number, number];
-  zoom: number;
-}) => {
-  const map = useMap();
-  
-  useEffect(() => {
-    map.setView(center, zoom);
-  }, [center, map, zoom]);
-  
-  return null;
-};
 
 // This component handles map clicks, updates the marker position, and animates the map view
 const LocationMarker = ({
@@ -81,37 +66,35 @@ const LocationPicker = ({
 }: LocationPickerProps) => {
   // State for the marker's position
   const [position, setPosition] = useState<[number, number]>([
-    initialLat || DEFAULT_LAT,
-    initialLng || DEFAULT_LNG,
+    initialLat,
+    initialLng,
   ]);
 
   // Define the initial center for the map container based on props
-  const initialCenter: L.LatLngExpression = [
-    initialLat || DEFAULT_LAT,
-    initialLng || DEFAULT_LNG,
-  ];
+  const initialCenter: L.LatLngExpression = [initialLat, initialLng];
 
   // Effect to update the marker's position if the initial props change externally
   useEffect(() => {
-    if (initialLat && initialLng) {
-      setPosition([initialLat, initialLng]);
-    }
+    setPosition([initialLat, initialLng]);
+    // Note: We don't automatically flyTo here, as the prop change might happen
+    // while the user is interacting with the map. The initialCenter handles the load.
   }, [initialLat, initialLng]);
 
   return (
     <div className={`relative ${className}`}>
-      <div className="w-full h-full rounded-md overflow-hidden border border-input">
+      <div className="w-full h-full rounded-md overflow-hidden border border-input"> {/* Added subtle border */}
         <MapContainer
-          style={{ height: "100%", width: "100%" }}
-          scrollWheelZoom={!readOnly}
+          center={initialCenter} // Use the initial center for map load
           zoom={DEFAULT_ZOOM}
-          center={initialCenter}
+          style={{ height: "100%", width: "100%" }}
+          dragging={!readOnly} // Disable dragging if readOnly
+          scrollWheelZoom={!readOnly} // Disable scroll wheel zoom if readOnly
+          doubleClickZoom={!readOnly} // Disable double click zoom if readOnly
+          zoomControl={!readOnly} // Hide zoom controls if readOnly
+          attributionControl={!readOnly} // Optionally hide attribution if readOnly
         >
-          {/* This controller component handles map view updates when props change */}
-          <MapController center={position} zoom={DEFAULT_ZOOM} />
-          
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           {/* Render the marker and handle clicks via the LocationMarker component */}
@@ -136,3 +119,4 @@ const LocationPicker = ({
 };
 
 export default LocationPicker;
+// --- END OF FILE LocationPicker.tsx ---

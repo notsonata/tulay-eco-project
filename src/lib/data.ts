@@ -1,3 +1,4 @@
+
 export type Barangay =
   | "Bagong Silang"
   | "Calendola"
@@ -85,8 +86,6 @@ export interface Report {
   issueCategory: IssueCategory;
   latitude: number;
   longitude: number;
-  street?: string;  // New field
-  landmark?: string; // New field
   images: ReportImage[];
   status: ReportStatus;
   submissionTimestamp: string;
@@ -288,7 +287,6 @@ export const fetchReportById = (id: string) => {
   return Promise.resolve({ ...report });
 };
 
-// Update the createReport function to support the new fields
 export const createReport = (reportData: Omit<Report, "id" | "submissionTimestamp" | "lastUpdatedTimestamp" | "upvoteCount" | "commentCount" | "status">) => {
   const newReport: Report = {
     ...reportData,
