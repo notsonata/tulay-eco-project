@@ -5,12 +5,14 @@ import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import UserInfoForm from "@/components/UserInfoForm";
 import LocationPicker from "@/components/LocationPicker";
 import ImageUpload from "@/components/ImageUpload";
+import PhoneVerification from "@/components/PhoneVerification";
 import { Barangay, ISSUE_CATEGORIES, IssueCategory, createReport } from "@/lib/data";
 import { ArrowLeft, Camera, MapPin, AlertTriangle, Loader } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -28,16 +30,34 @@ const SubmitReport = () => {
     barangay: Barangay;
   } | null>(null);
   
+  // Phone verification
+  const [phoneVerified, setPhoneVerified] = useState(false);
+  const [showVerification, setShowVerification] = useState(false);
+  
   const [issueCategory, setIssueCategory] = useState<IssueCategory | "">("");
   const [issueDescription, setIssueDescription] = useState("");
+  
+  // Location data
   const [latitude, setLatitude] = useState(0);
   const [longitude, setLongitude] = useState(0);
   const [locationSelected, setLocationSelected] = useState(false);
+  const [street, setStreet] = useState("");
+  const [landmark, setLandmark] = useState("");
+  
+  // Images
   const [images, setImages] = useState<File[]>([]);
   const [imageError, setImageError] = useState("");
   
   const handleUserInfoSubmit = (info: {name: string; phoneNumber: string; barangay: Barangay}) => {
     setUserInfo(info);
+    // Show phone verification step
+    setShowVerification(true);
+  };
+  
+  const handlePhoneVerified = () => {
+    setPhoneVerified(true);
+    setShowVerification(false);
+    // Continue to next step
     setCurrentStep(2);
   };
   
@@ -76,20 +96,41 @@ const SubmitReport = () => {
       return;
     }
     
+    if (!street.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter the street name",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!landmark.trim()) {
+      toast({
+        title: "Error",
+        description: "Please provide a nearby landmark",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setCurrentStep(4);
   };
   
   const handleImagesSubmit = async () => {
-    // Images are optional but we should validate if any were added
     setImageError("");
     
-    if (images.length > 0) {
-      // Check file sizes
-      for (const file of images) {
-        if (file.size > 5 * 1024 * 1024) { // 5MB limit
-          setImageError("One or more images exceed the 5MB size limit");
-          return;
-        }
+    // Check if any images were uploaded (now required)
+    if (images.length === 0) {
+      setImageError("Please upload at least one photo as evidence");
+      return;
+    }
+    
+    // Check file sizes
+    for (const file of images) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        setImageError("One or more images exceed the 5MB size limit");
+        return;
       }
     }
     
@@ -115,6 +156,8 @@ const SubmitReport = () => {
         latitude,
         longitude,
         images: mockImageUrls,
+        street,
+        landmark,
       });
       
       // Show success and redirect
@@ -147,6 +190,43 @@ const SubmitReport = () => {
   
   const handleImagesSelected = (selectedImages: File[]) => {
     setImages(prevImages => [...prevImages, ...selectedImages]);
+  };
+
+  const handleSearchLocation = () => {
+    if (!userInfo || !street.trim()) return;
+    
+    // In a real app, this would use a geocoding service with the street and barangay
+    // For demo purposes, we'll just use OpenStreetMap's nominatim service for display purposes
+    
+    // For Philippines addresses typically include the barangay, city, and province
+    const address = `${street}, ${userInfo.barangay} San Pedro, Laguna, Philippines`;
+    
+    // Display toast to indicate search is happening
+    toast({
+      title: "Searching Location",
+      description: `Looking for ${address}`,
+    });
+    
+    // In a real implementation, you would call a geocoding API here
+    // and update the map position based on the results
+    
+    // For this demo, we'll simulate a successful search after a delay
+    setTimeout(() => {
+      // These are just sample coordinates near San Pedro, Laguna
+      // In a real app, these would come from the geocoding API
+      const newLat = 14.35 + (Math.random() * 0.02);
+      const newLng = 121.05 + (Math.random() * 0.02);
+      
+      // Update map position
+      setLatitude(newLat);
+      setLongitude(newLng);
+      setLocationSelected(true);
+      
+      toast({
+        title: "Location Found",
+        description: "Map has been updated to show the approximate location.",
+      });
+    }, 1500);
   };
   
   return (
@@ -207,7 +287,7 @@ const SubmitReport = () => {
           <Card className="border shadow-sm">
             <CardContent className="pt-6">
               {/* Step 1: Reporter Info */}
-              {currentStep === 1 && (
+              {currentStep === 1 && !showVerification && (
                 <div className="space-y-4 animate-fade-in">
                   <div className="text-center mb-6">
                     <h2 className="text-xl font-semibold">Your Information</h2>
@@ -216,7 +296,23 @@ const SubmitReport = () => {
                   
                   <UserInfoForm 
                     onSubmit={handleUserInfoSubmit}
-                    buttonText="Continue to Issue Details"
+                    buttonText="Continue to Verification"
+                  />
+                </div>
+              )}
+
+              {/* Phone Verification Step */}
+              {currentStep === 1 && showVerification && userInfo && (
+                <div className="space-y-4 animate-fade-in">
+                  <div className="text-center mb-6">
+                    <h2 className="text-xl font-semibold">Phone Verification</h2>
+                    <p className="text-sm text-muted-foreground">Please verify your phone number to continue</p>
+                  </div>
+                  
+                  <PhoneVerification 
+                    phoneNumber={userInfo.phoneNumber}
+                    onVerified={handlePhoneVerified}
+                    onCancel={() => setShowVerification(false)}
                   />
                 </div>
               )}
@@ -276,17 +372,70 @@ const SubmitReport = () => {
                 <div className="space-y-4 animate-fade-in">
                   <div className="text-center mb-6">
                     <h2 className="text-xl font-semibold">Issue Location</h2>
-                    <p className="text-sm text-muted-foreground">Please mark the exact location of the issue on the map</p>
+                    <p className="text-sm text-muted-foreground">Please provide the location details of the issue</p>
                   </div>
                   
                   <div className="space-y-6">
+                    {userInfo && (
+                      <div className="space-y-4 bg-muted/30 p-4 rounded-lg">
+                        <div>
+                          <Label htmlFor="street">Street Name *</Label>
+                          <Input
+                            id="street"
+                            placeholder="Enter street name (e.g., A. Mabini Street)"
+                            value={street}
+                            onChange={(e) => setStreet(e.target.value)}
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="landmark">Nearby Landmark *</Label>
+                          <Input
+                            id="landmark"
+                            placeholder="Enter a nearby landmark (e.g., San Pedro Elementary School)"
+                            value={landmark}
+                            onChange={(e) => setLandmark(e.target.value)}
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor="barangay">Barangay</Label>
+                          <Input
+                            id="barangay"
+                            value={userInfo.barangay}
+                            disabled
+                            className="bg-muted"
+                          />
+                        </div>
+                        
+                        <Button 
+                          type="button" 
+                          variant="secondary"
+                          className="w-full"
+                          onClick={handleSearchLocation}
+                          disabled={!street}
+                        >
+                          Search Location
+                        </Button>
+                      </div>
+                    )}
+                    
                     <div className="bg-card rounded-lg overflow-hidden">
-                      <LocationPicker onLocationSelected={handleLocationSelect} />
+                      <LocationPicker 
+                        onLocationSelected={handleLocationSelect}
+                        initialLat={latitude || undefined}
+                        initialLng={longitude || undefined}
+                      />
                       
                       {locationSelected && (
                         <div className="p-3 bg-green-50 text-green-800 text-sm flex items-center">
                           <MapPin className="h-4 w-4 mr-2" />
-                          <span>Location selected: {latitude.toFixed(6)}, {longitude.toFixed(6)}</span>
+                          <span>
+                            Location selected at {street}, near {landmark}
+                            <div className="text-xs text-green-700/80">
+                              Coordinates: {latitude.toFixed(6)}, {longitude.toFixed(6)}
+                            </div>
+                          </span>
                         </div>
                       )}
                     </div>
@@ -334,7 +483,7 @@ const SubmitReport = () => {
                   <div className="space-y-6">
                     <div className="flex items-center gap-3 bg-blue-50 p-3 rounded-md text-sm text-blue-800">
                       <Camera className="h-5 w-5 flex-shrink-0" />
-                      <p>Photos help authorities verify and address the issue more efficiently. You can upload up to 3 images.</p>
+                      <p>Photos help authorities verify and address the issue more efficiently. Please upload at least one image.</p>
                     </div>
                     
                     <ImageUpload 
@@ -362,7 +511,7 @@ const SubmitReport = () => {
                       <Button 
                         type="button"
                         onClick={handleImagesSubmit}
-                        disabled={loading}
+                        disabled={loading || images.length === 0}
                       >
                         {loading ? (
                           <>
