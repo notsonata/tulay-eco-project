@@ -12,7 +12,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import UserInfoForm from "@/components/UserInfoForm";
 import LocationPicker from "@/components/LocationPicker";
 import ImageUpload from "@/components/ImageUpload";
-import PhoneVerification from "@/components/PhoneVerification";
 import { Barangay, ISSUE_CATEGORIES, IssueCategory, createReport } from "@/lib/data";
 import { ArrowLeft, Camera, MapPin, AlertTriangle, Loader } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -30,9 +29,8 @@ const SubmitReport = () => {
     barangay: Barangay;
   } | null>(null);
   
-  // Phone verification
+  // Phone verification is now handled in the UserInfoForm component
   const [phoneVerified, setPhoneVerified] = useState(false);
-  const [showVerification, setShowVerification] = useState(false);
   
   const [issueCategory, setIssueCategory] = useState<IssueCategory | "">("");
   const [issueDescription, setIssueDescription] = useState("");
@@ -50,14 +48,8 @@ const SubmitReport = () => {
   
   const handleUserInfoSubmit = (info: {name: string; phoneNumber: string; barangay: Barangay}) => {
     setUserInfo(info);
-    // Show phone verification step
-    setShowVerification(true);
-  };
-  
-  const handlePhoneVerified = () => {
     setPhoneVerified(true);
-    setShowVerification(false);
-    // Continue to next step
+    // Continue directly to next step since verification happens in-form
     setCurrentStep(2);
   };
   
@@ -287,7 +279,7 @@ const SubmitReport = () => {
           <Card className="border shadow-sm">
             <CardContent className="pt-6">
               {/* Step 1: Reporter Info */}
-              {currentStep === 1 && !showVerification && (
+              {currentStep === 1 && (
                 <div className="space-y-4 animate-fade-in">
                   <div className="text-center mb-6">
                     <h2 className="text-xl font-semibold">Your Information</h2>
@@ -296,23 +288,7 @@ const SubmitReport = () => {
                   
                   <UserInfoForm 
                     onSubmit={handleUserInfoSubmit}
-                    buttonText="Continue to Verification"
-                  />
-                </div>
-              )}
-
-              {/* Phone Verification Step */}
-              {currentStep === 1 && showVerification && userInfo && (
-                <div className="space-y-4 animate-fade-in">
-                  <div className="text-center mb-6">
-                    <h2 className="text-xl font-semibold">Phone Verification</h2>
-                    <p className="text-sm text-muted-foreground">Please verify your phone number to continue</p>
-                  </div>
-                  
-                  <PhoneVerification 
-                    phoneNumber={userInfo.phoneNumber}
-                    onVerified={handlePhoneVerified}
-                    onCancel={() => setShowVerification(false)}
+                    buttonText="Continue to Issue Details"
                   />
                 </div>
               )}

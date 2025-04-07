@@ -86,7 +86,7 @@ const LocationPicker = ({
   ]);
 
   // Define the initial center for the map container based on props
-  const center: L.LatLngExpression = [
+  const initialCenter: L.LatLngExpression = [
     initialLat || DEFAULT_LAT,
     initialLng || DEFAULT_LNG,
   ];
@@ -102,15 +102,16 @@ const LocationPicker = ({
     <div className={`relative ${className}`}>
       <div className="w-full h-full rounded-md overflow-hidden border border-input">
         <MapContainer
-          center={center}
           style={{ height: "100%", width: "100%" }}
           scrollWheelZoom={!readOnly}
+          zoom={DEFAULT_ZOOM}
+          center={initialCenter}
         >
           {/* This controller component handles map view updates when props change */}
           <MapController center={position} zoom={DEFAULT_ZOOM} />
           
           <TileLayer
-            attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           {/* Render the marker and handle clicks via the LocationMarker component */}
