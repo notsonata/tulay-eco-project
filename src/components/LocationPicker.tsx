@@ -101,7 +101,7 @@ const LocationPicker = ({
   ]);
 
   // Define the initial center for the map container based on props
-  const initialCenter: L.LatLngExpression = [initialLat, initialLng];
+  const initialCenter: [number, number] = [initialLat, initialLng];
 
   // Effect to update the marker's position if the initial props change externally
   useEffect(() => {
@@ -112,15 +112,14 @@ const LocationPicker = ({
     <div className={`relative ${className}`}>
       <div className="w-full h-full rounded-md overflow-hidden border border-input">
         <MapContainer
-          center={initialCenter as any} // Type cast to fix TS error
+          center={initialCenter}
           zoom={DEFAULT_ZOOM}
           style={{ height: "100%", width: "100%" }}
           scrollWheelZoom={!readOnly}
         >
           <TileLayer
-            attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            key="osm-tiles"
           />
           
           {/* Controller to update map when street/landmark/barangay changes */}
