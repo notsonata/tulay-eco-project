@@ -1,8 +1,6 @@
-// --- START OF FILE LocationPicker.tsx ---
 
 import { useState, useEffect } from "react";
-import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
-// Removed: import { MapPin } from "lucide-react"; // Was unused
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
@@ -23,12 +21,41 @@ interface LocationPickerProps {
   initialLng?: number;
   readOnly?: boolean;
   className?: string;
+  street?: string;
+  landmark?: string;
+  barangay?: string;
 }
 
 // SAN PEDRO, LAGUNA center coordinates (or your preferred default)
 const DEFAULT_LAT = 14.3583;
 const DEFAULT_LNG = 121.0560;
 const DEFAULT_ZOOM = 14;
+
+// Map update component when props change
+const MapController = ({ street, landmark, barangay }: { street?: string, landmark?: string, barangay?: string }) => {
+  const map = useMap();
+  
+  useEffect(() => {
+    if (street || landmark || barangay) {
+      const searchQuery = [street, landmark, barangay].filter(Boolean).join(", ");
+      
+      if (searchQuery) {
+        // Using Nominatim for geocoding (basic OpenStreetMap geocoding)
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery + ", San Pedro, Laguna, Philippines")}`)
+          .then(response => response.json())
+          .then(data => {
+            if (data && data.length > 0) {
+              const { lat, lon } = data[0];
+              map.flyTo([parseFloat(lat), parseFloat(lon)], 17);
+            }
+          })
+          .catch(error => console.error("Geocoding error:", error));
+      }
+    }
+  }, [street, landmark, barangay, map]);
+  
+  return null;
+};
 
 // This component handles map clicks, updates the marker position, and animates the map view
 const LocationMarker = ({
@@ -63,6 +90,9 @@ const LocationPicker = ({
   initialLng = DEFAULT_LNG,
   readOnly = false,
   className = "h-64 w-full",
+  street,
+  landmark,
+  barangay
 }: LocationPickerProps) => {
   // State for the marker's position
   const [position, setPosition] = useState<[number, number]>([
@@ -76,27 +106,25 @@ const LocationPicker = ({
   // Effect to update the marker's position if the initial props change externally
   useEffect(() => {
     setPosition([initialLat, initialLng]);
-    // Note: We don't automatically flyTo here, as the prop change might happen
-    // while the user is interacting with the map. The initialCenter handles the load.
   }, [initialLat, initialLng]);
 
   return (
     <div className={`relative ${className}`}>
-      <div className="w-full h-full rounded-md overflow-hidden border border-input"> {/* Added subtle border */}
+      <div className="w-full h-full rounded-md overflow-hidden border border-input">
         <MapContainer
-          center={initialCenter} // Use the initial center for map load
+          center={initialCenter}
           zoom={DEFAULT_ZOOM}
           style={{ height: "100%", width: "100%" }}
-          dragging={!readOnly} // Disable dragging if readOnly
-          scrollWheelZoom={!readOnly} // Disable scroll wheel zoom if readOnly
-          doubleClickZoom={!readOnly} // Disable double click zoom if readOnly
-          zoomControl={!readOnly} // Hide zoom controls if readOnly
-          attributionControl={!readOnly} // Optionally hide attribution if readOnly
+          scrollWheelZoom={!readOnly}
         >
           <TileLayer
             attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
+          
+          {/* Controller to update map when street/landmark/barangay changes */}
+          <MapController street={street} landmark={landmark} barangay={barangay} />
+          
           {/* Render the marker and handle clicks via the LocationMarker component */}
           <LocationMarker
             position={position}
@@ -113,10 +141,8 @@ const LocationPicker = ({
           </div>
         )}
       </div>
-      
     </div>
   );
 };
 
 export default LocationPicker;
-// --- END OF FILE LocationPicker.tsx ---

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import UserInfoForm from "@/components/UserInfoForm";
@@ -30,11 +31,16 @@ const SubmitReport = () => {
   
   const [issueCategory, setIssueCategory] = useState<IssueCategory | "">("");
   const [issueDescription, setIssueDescription] = useState("");
+  const [street, setStreet] = useState("");
+  const [landmark, setLandmark] = useState("");
   const [latitude, setLatitude] = useState(0);
   const [longitude, setLongitude] = useState(0);
   const [locationSelected, setLocationSelected] = useState(false);
   const [images, setImages] = useState<File[]>([]);
   const [imageError, setImageError] = useState("");
+  
+  const [streetError, setStreetError] = useState("");
+  const [landmarkError, setLandmarkError] = useState("");
   
   const handleUserInfoSubmit = (info: {name: string; phoneNumber: string; barangay: Barangay}) => {
     setUserInfo(info);
@@ -66,30 +72,54 @@ const SubmitReport = () => {
     setCurrentStep(3);
   };
   
-  const handleLocationSubmit = () => {
+  const handleLocationSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Reset errors
+    setStreetError("");
+    setLandmarkError("");
+    
+    // Validate
+    let isValid = true;
+    
+    if (!street.trim()) {
+      setStreetError("Street name is required");
+      isValid = false;
+    }
+    
+    if (!landmark.trim()) {
+      setLandmarkError("Landmark is required");
+      isValid = false;
+    }
+    
     if (!locationSelected) {
       toast({
         title: "Error",
         description: "Please select a location on the map",
         variant: "destructive",
       });
-      return;
+      isValid = false;
     }
     
-    setCurrentStep(4);
+    if (isValid) {
+      setCurrentStep(4);
+    }
   };
   
   const handleImagesSubmit = async () => {
-    // Images are optional but we should validate if any were added
+    // Images are required
     setImageError("");
     
-    if (images.length > 0) {
-      // Check file sizes
-      for (const file of images) {
-        if (file.size > 5 * 1024 * 1024) { // 5MB limit
-          setImageError("One or more images exceed the 5MB size limit");
-          return;
-        }
+    if (images.length === 0) {
+      setImageError("Please upload at least one image as evidence");
+      return;
+    }
+    
+    // Check file sizes
+    for (const file of images) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        setImageError("One or more images exceed the 5MB size limit");
+        return;
       }
     }
     
@@ -114,6 +144,8 @@ const SubmitReport = () => {
         issueCategory: issueCategory as IssueCategory,
         latitude,
         longitude,
+        street,
+        landmark,
         images: mockImageUrls,
       });
       
@@ -273,15 +305,52 @@ const SubmitReport = () => {
               
               {/* Step 3: Location */}
               {currentStep === 3 && (
-                <div className="space-y-4 animate-fade-in">
+                <form onSubmit={handleLocationSubmit} className="space-y-4 animate-fade-in">
                   <div className="text-center mb-6">
                     <h2 className="text-xl font-semibold">Issue Location</h2>
-                    <p className="text-sm text-muted-foreground">Please mark the exact location of the issue on the map</p>
+                    <p className="text-sm text-muted-foreground">Please provide the exact location of the issue</p>
                   </div>
                   
                   <div className="space-y-6">
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="street">Street Name *</Label>
+                        <Input 
+                          id="street"
+                          placeholder="Enter the street name"
+                          value={street}
+                          onChange={(e) => setStreet(e.target.value)}
+                          className={streetError ? "border-red-500" : ""}
+                        />
+                        {streetError && <p className="text-sm text-red-500 mt-1">{streetError}</p>}
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="landmark">Nearest Landmark *</Label>
+                        <Input 
+                          id="landmark"
+                          placeholder="Enter a nearby landmark (e.g., school, store)"
+                          value={landmark}
+                          onChange={(e) => setLandmark(e.target.value)}
+                          className={landmarkError ? "border-red-500" : ""}
+                        />
+                        {landmarkError && <p className="text-sm text-red-500 mt-1">{landmarkError}</p>}
+                      </div>
+                      
+                      <div className="pt-2">
+                        <div className="bg-blue-50 p-3 rounded-md text-sm text-blue-800 mb-3">
+                          <p>After entering street and landmark details, the map will update. Please also click on the map to mark the precise location.</p>
+                        </div>
+                      </div>
+                    </div>
+                    
                     <div className="bg-card rounded-lg overflow-hidden">
-                      <LocationPicker onLocationSelected={handleLocationSelect} />
+                      <LocationPicker 
+                        onLocationSelected={handleLocationSelect} 
+                        street={street}
+                        landmark={landmark}
+                        barangay={userInfo?.barangay}
+                      />
                       
                       {locationSelected && (
                         <div className="p-3 bg-green-50 text-green-800 text-sm flex items-center">
@@ -291,19 +360,6 @@ const SubmitReport = () => {
                       )}
                     </div>
                     
-                    <Tabs defaultValue="standard">
-                      <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="standard">Standard Map</TabsTrigger>
-                        <TabsTrigger value="satellite">Satellite View</TabsTrigger>
-                      </TabsList>
-                      <TabsContent value="standard" className="text-xs text-muted-foreground">
-                        Standard map view shows streets and landmarks
-                      </TabsContent>
-                      <TabsContent value="satellite" className="text-xs text-muted-foreground">
-                        Satellite view shows actual terrain and buildings
-                      </TabsContent>
-                    </Tabs>
-                    
                     <div className="pt-4 flex justify-between">
                       <Button
                         type="button"
@@ -312,15 +368,12 @@ const SubmitReport = () => {
                       >
                         Back
                       </Button>
-                      <Button 
-                        type="button"
-                        onClick={handleLocationSubmit}
-                      >
+                      <Button type="submit">
                         Continue to Evidence
                       </Button>
                     </div>
                   </div>
-                </div>
+                </form>
               )}
               
               {/* Step 4: Images/Evidence */}
@@ -334,7 +387,7 @@ const SubmitReport = () => {
                   <div className="space-y-6">
                     <div className="flex items-center gap-3 bg-blue-50 p-3 rounded-md text-sm text-blue-800">
                       <Camera className="h-5 w-5 flex-shrink-0" />
-                      <p>Photos help authorities verify and address the issue more efficiently. You can upload up to 3 images.</p>
+                      <p>Photos help authorities verify and address the issue more efficiently. <strong>Please upload at least one image.</strong></p>
                     </div>
                     
                     <ImageUpload 
