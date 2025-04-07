@@ -112,7 +112,7 @@ const LocationPicker = ({
     <div className={`relative ${className}`}>
       <div className="w-full h-full rounded-md overflow-hidden border border-input">
         <MapContainer
-          center={initialCenter}
+          center={initialCenter as any} // Type cast to fix TS error
           zoom={DEFAULT_ZOOM}
           style={{ height: "100%", width: "100%" }}
           scrollWheelZoom={!readOnly}
@@ -120,6 +120,7 @@ const LocationPicker = ({
           <TileLayer
             attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            key="osm-tiles"
           />
           
           {/* Controller to update map when street/landmark/barangay changes */}

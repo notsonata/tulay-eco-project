@@ -16,12 +16,26 @@ interface CommentSectionProps {
     commenterBarangay: Barangay; 
     commentText: string;
   }) => Promise<void>;
+  showFullInfo?: boolean;
 }
 
-const CommentSection = ({ comments, reportId, onAddComment }: CommentSectionProps) => {
+const CommentSection = ({ comments, reportId, onAddComment, showFullInfo = false }: CommentSectionProps) => {
   const [showUserInfoForm, setShowUserInfoForm] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  
+  // Function to censor last name (show only first name and first letter of last name)
+  const censorName = (fullName: string) => {
+    if (showFullInfo) return fullName;
+    
+    const nameParts = fullName.trim().split(' ');
+    if (nameParts.length === 1) return nameParts[0];
+    
+    const firstName = nameParts[0];
+    const lastNameInitial = nameParts[nameParts.length - 1][0];
+    
+    return `${firstName} ${lastNameInitial}.`;
+  };
   
   const handleUserInfoSubmit = async (userInfo: {name: string; phoneNumber: string; barangay: Barangay}) => {
     if (!commentText.trim()) {
@@ -110,10 +124,21 @@ const CommentSection = ({ comments, reportId, onAddComment }: CommentSectionProp
             <div key={comment.id} className="bg-card p-4 rounded-lg border">
               <div className="flex justify-between items-start mb-2">
                 <div>
-                  <p className="font-medium">{comment.commenterName}</p>
-                  <p className="text-xs text-muted-foreground">
-                    From {comment.commenterBarangay}
-                  </p>
+                  <p className="font-medium">{censorName(comment.commenterName)}</p>
+                  {showFullInfo ? (
+                    <>
+                      <p className="text-xs text-muted-foreground">
+                        From {comment.commenterBarangay}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {comment.commenterPhoneNumber}
+                      </p>
+                    </>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      From {comment.commenterBarangay}
+                    </p>
+                  )}
                 </div>
                 <span className="text-xs text-muted-foreground">
                   {formatDistanceToNow(new Date(comment.commentTimestamp), {

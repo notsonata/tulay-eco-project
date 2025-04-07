@@ -29,7 +29,8 @@ import {
   Ban,
   Leaf,
   Loader,
-  BarChart3
+  BarChart3,
+  ExternalLink
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import {
@@ -186,6 +187,12 @@ const AdminDashboard = () => {
   const resolvedCount = reports.filter(r => r.status === "Resolved").length;
   const spamCount = reports.filter(r => r.status === "Invalid/Spam").length;
 
+  // View report on public site with admin privileges
+  const viewReportAsAdmin = (reportId: string) => {
+    // Already set isAdmin in sessionStorage during login
+    window.open(`/report/${reportId}`, '_blank');
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-muted/30">
       {/* Header */}
@@ -337,6 +344,7 @@ const AdminDashboard = () => {
                       <th className="px-4 py-3 text-left text-sm font-medium">Issue</th>
                       <th className="px-4 py-3 text-left text-sm font-medium">Reporter</th>
                       <th className="px-4 py-3 text-left text-sm font-medium">Barangay</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium">Phone</th>
                       <th className="px-4 py-3 text-left text-sm font-medium">Date</th>
                       <th className="px-4 py-3 text-left text-sm font-medium">Status</th>
                       <th className="px-4 py-3 text-left text-sm font-medium">Engagement</th>
@@ -361,10 +369,12 @@ const AdminDashboard = () => {
                           </td>
                           <td className="px-4 py-3">
                             <p className="text-sm">{report.reporterName}</p>
-                            <p className="text-xs text-muted-foreground">{report.reporterPhoneNumber}</p>
                           </td>
                           <td className="px-4 py-3 text-sm">
                             {report.reporterBarangay}
+                          </td>
+                          <td className="px-4 py-3 text-sm">
+                            {report.reporterPhoneNumber}
                           </td>
                           <td className="px-4 py-3 text-sm">
                             {timeAgo}
@@ -427,9 +437,10 @@ const AdminDashboard = () => {
                                 variant="outline"
                                 size="sm"
                                 className="h-8"
-                                asChild
+                                onClick={() => viewReportAsAdmin(report.id)}
                               >
-                                <Link to={`/report/${report.id}`} target="_blank">View</Link>
+                                <ExternalLink className="h-4 w-4 mr-1" />
+                                View
                               </Button>
                             </div>
                           </td>

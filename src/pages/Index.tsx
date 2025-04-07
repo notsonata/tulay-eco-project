@@ -18,6 +18,13 @@ const Index = () => {
   const [error, setError] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<SortOption>("newest");
   const [activeView, setActiveView] = useState("list");
+  const [showFullInfo, setShowFullInfo] = useState(false);
+
+  // Check if user is admin
+  useEffect(() => {
+    const isAdmin = sessionStorage.getItem("isAdmin") === "true";
+    setShowFullInfo(isAdmin);
+  }, []);
 
   useEffect(() => {
     const loadReports = async () => {
@@ -54,6 +61,13 @@ const Index = () => {
       
       <main className="flex-1">
         <div className="container mx-auto p-4 py-6">
+          {/* Admin Indicator */}
+          {showFullInfo && (
+            <div className="mb-6 bg-yellow-100 border border-yellow-300 text-yellow-800 px-4 py-2 rounded-md">
+              <p className="text-sm font-medium">Admin View: You are seeing full user information</p>
+            </div>
+          )}
+          
           {/* Hero Section */}
           <section className="mb-8 bg-gradient-to-br from-primary/90 to-info/90 text-white p-8 rounded-lg shadow-md">
             <div className="max-w-3xl mx-auto text-center">
@@ -125,7 +139,7 @@ const Index = () => {
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {sortedReports.map((report) => (
-                        <ReportCard key={report.id} report={report} />
+                        <ReportCard key={report.id} report={report} showFullInfo={showFullInfo} />
                       ))}
                     </div>
                   )}

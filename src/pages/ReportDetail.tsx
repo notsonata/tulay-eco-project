@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import Header from "@/components/Header";
@@ -34,6 +35,26 @@ const ReportDetail = () => {
     isOpen: false,
     initialIndex: 0
   });
+  const [showFullInfo, setShowFullInfo] = useState(false);
+  
+  // Check if user is admin
+  useEffect(() => {
+    const isAdmin = sessionStorage.getItem("isAdmin") === "true";
+    setShowFullInfo(isAdmin);
+  }, []);
+  
+  // Function to censor last name
+  const censorName = (fullName: string) => {
+    if (showFullInfo) return fullName;
+    
+    const nameParts = fullName.trim().split(' ');
+    if (nameParts.length === 1) return nameParts[0];
+    
+    const firstName = nameParts[0];
+    const lastNameInitial = nameParts[nameParts.length - 1][0];
+    
+    return `${firstName} ${lastNameInitial}.`;
+  };
   
   useEffect(() => {
     const loadData = async () => {
@@ -182,6 +203,13 @@ const ReportDetail = () => {
             <ArrowLeft className="h-4 w-4 mr-1" /> Back to Reports
           </Link>
           
+          {/* Admin Indicator */}
+          {showFullInfo && (
+            <div className="mb-4 bg-yellow-100 border border-yellow-300 text-yellow-800 px-4 py-2 rounded-md">
+              <p className="text-sm font-medium">Admin View: You are seeing full user information</p>
+            </div>
+          )}
+          
           {/* Report Header */}
           <div className="mb-6">
             <div className="flex flex-wrap items-start justify-between gap-4 mb-2">
@@ -299,8 +327,11 @@ const ReportDetail = () => {
                     <Separator />
                     <div>
                       <p className="text-sm text-muted-foreground">Reported by</p>
-                      <p className="font-medium">{report.reporterName}</p>
+                      <p className="font-medium">{censorName(report.reporterName)}</p>
                       <p className="text-xs text-muted-foreground">{report.reporterBarangay}</p>
+                      {showFullInfo && (
+                        <p className="text-xs text-muted-foreground">{report.reporterPhoneNumber}</p>
+                      )}
                     </div>
                     <Separator />
                     <div className="flex items-center justify-between">
@@ -326,6 +357,7 @@ const ReportDetail = () => {
                 comments={comments} 
                 reportId={report.id} 
                 onAddComment={handleAddComment}
+                showFullInfo={showFullInfo}
               />
             </CardContent>
           </Card>

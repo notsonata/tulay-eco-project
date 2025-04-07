@@ -8,12 +8,26 @@ import { Link } from "react-router-dom";
 
 interface ReportCardProps {
   report: Report;
+  showFullInfo?: boolean;
 }
 
-const ReportCard = ({ report }: ReportCardProps) => {
+const ReportCard = ({ report, showFullInfo = false }: ReportCardProps) => {
   const formattedDate = formatDistanceToNow(new Date(report.submissionTimestamp), { 
     addSuffix: true 
   });
+  
+  // Function to censor last name (show only first name and first letter of last name)
+  const censorName = (fullName: string) => {
+    if (showFullInfo) return fullName;
+    
+    const nameParts = fullName.trim().split(' ');
+    if (nameParts.length === 1) return nameParts[0];
+    
+    const firstName = nameParts[0];
+    const lastNameInitial = nameParts[nameParts.length - 1][0];
+    
+    return `${firstName} ${lastNameInitial}.`;
+  };
   
   return (
     <Link to={`/report/${report.id}`}>
